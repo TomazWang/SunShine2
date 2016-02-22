@@ -1,6 +1,7 @@
 package me.tomazwang.app.sunshine2;
 
 /**
+ *
  * Created by Rbur on 2016/2/22.
  */
 
@@ -18,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -31,16 +31,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * @authour TomazWang
+ * @author  TomazWang
  */
 public class ForecastFragment extends Fragment {
 
     private static final String TAG = ForecastFragment.class.getSimpleName();
+    private ArrayAdapter<String> mForecastListAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -95,7 +97,7 @@ public class ForecastFragment extends Fragment {
 
         ListView mForecastList = (ListView) rootView.findViewById(R.id.listview_forecast);
 
-        ListAdapter mForecastListAdapter = new ArrayAdapter<>(
+        mForecastListAdapter = new ArrayAdapter<>(
                 getActivity(),
                 R.layout.list_item_forecast,
                 R.id.list_item_forecast_textview,
@@ -109,11 +111,11 @@ public class ForecastFragment extends Fragment {
     }
 
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
 
         @Override
-        protected Void doInBackground(String... params) {
+        protected String[] doInBackground(String... params) {
 
             if (params.length == 0) {
                 Log.w(TAG, "doInBackground: no input");
@@ -205,10 +207,30 @@ public class ForecastFragment extends Fragment {
                 }
             }
 
+            try {
+                return getWeatherDataFromJson(forecastJsonStr,numDays);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.e(TAG, "doInBackground: JSON Exception",e);
+            }
+
+
             return null;
 
         }
 
+
+        @Override
+        protected void onPostExecute(String[] result) {
+
+            if(result != null){
+                mForecastListAdapter.clear();
+                for(String dayForecastStr : result){
+                    mForecastListAdapter.add(dayForecastStr);
+                }
+            }
+
+        }
 
 
         private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays) throws JSONException{
@@ -219,7 +241,8 @@ public class ForecastFragment extends Fragment {
             final String OWM_TEMPERATURE = "temp";
             final String OWM_TEMP_MAX = "max";
             final String OWM_TEMP_MIN = "min";
-            final String OWM_WEATHER_DESCRIPTION = "main";
+            final String OWM_WEATHER_MAIN = "main";
+            final String OWM_WEATHER_DESCRIPTION = "description";
 
 
 
@@ -233,9 +256,57 @@ public class ForecastFragment extends Fragment {
 
             int julianStartDay = Time.getJulianDay(System.currentTimeMillis(),dayTime.gmtoff);
 
+            String[] resultStrs = new String[numDays];
+            for (int i = 0; i<weatherArray.length();i++){
+                // For now, using the format "Day, description, hi/low"
+                String day;
+                String description;
+                String highAndLow;
 
+                // Get the JSON object representing the day
+                JSONObject dayForecast = weatherArray.getJSONObject(i);
 
+                // The date/time is returned as a long.  We need to convert that
+                // into something human-readable, since most people won't read "1400356800" as
+                // "this saturday".
+                long dateTime;
+                // Cheating to convert this to UTC time, which is what we want anyhow
+                dateTime = dayTime.setJulianDay(julianStartDay+i);
+                day = getReadableDateString(dateTime);
 
+                // description is in a child array called "weather", which is 1 element long.
+                JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+                description = weatherObject.getString(OWM_WEATHER_DESCRIPTION);
+
+                // Temperatures are in a child object called "temp".  Try not to name variables
+                // "temp" when working with temperature.  It confuses everybody.
+                JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
+                double high = temperatureObject.getDouble(OWM_TEMP_MAX);
+                double low = temperatureObject.getDouble(OWM_TEMP_MIN);
+
+                highAndLow = formatHighLows(high, low);
+                resultStrs[i] = day + " - " + description + " - " + highAndLow;
+            }
+
+            for (String s : resultStrs) {
+                Log.v(TAG, "Forecast entry: " + s);
+            }
+            return resultStrs;
+        }
+
+        private String formatHighLows(double high, double low) {
+            // For presentation, assume the user doesn't care about tenths of a degree.
+            long roundedHigh = Math.round(high);
+            long roundedLow = Math.round(low);
+
+            return roundedHigh + "/" + roundedLow;
+        }
+
+        private String getReadableDateString(long time) {
+            // Because the API returns a unix timestamp (measured in seconds),
+            // it must be converted to milliseconds in order to be converted to valid date.
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+            return shortenedDateFormat.format(time);
         }
 
     }
