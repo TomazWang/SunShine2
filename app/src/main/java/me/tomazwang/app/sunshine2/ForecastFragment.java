@@ -5,6 +5,7 @@ package me.tomazwang.app.sunshine2;
  * Created by Rbur on 2016/2/22.
  */
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,8 +69,7 @@ public class ForecastFragment extends Fragment {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
             Log.v(TAG, "Select action refresh");
-            FetchWeatherTask weatherTask = new FetchWeatherTask();
-            weatherTask.execute("Taipei");
+            refresh();
             return true;
         }
 
@@ -96,15 +95,22 @@ public class ForecastFragment extends Fragment {
         mForecastList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getActivity(),mForecastListAdapter.getItem(position),Toast.LENGTH_SHORT).show();
+
+                String forecast = mForecastListAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(),DetailActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT,forecast);
+
+                startActivity(intent);
             }
         });
 
         mForecastList.setAdapter(mForecastListAdapter);
 
+        refresh();
         return rootView;
 
     }
+
 
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
@@ -305,5 +311,16 @@ public class ForecastFragment extends Fragment {
             return shortenedDateFormat.format(time);
         }
 
+
     }
+
+    public void refresh(){
+        Log.d(TAG, "refresh: do refresh()");
+
+        FetchWeatherTask weatherTask = new FetchWeatherTask();
+        weatherTask.execute("Taipei");
+    }
+
+
+
 }

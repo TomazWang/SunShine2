@@ -1,15 +1,20 @@
 package me.tomazwang.app.sunshine2;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 public class DetailActivity extends AppCompatActivity {
+
+    private final static String TAG = DetailActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +62,14 @@ public class DetailActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
 
+            Intent intent = getActivity().getIntent();
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+
+            if(intent != null && intent.hasExtra(Intent.EXTRA_TEXT)){
+                String forecastStr = intent.getStringExtra(Intent.EXTRA_TEXT);
+                Log.v(TAG,"get forecastStr = "+forecastStr);
+                ((TextView)rootView.findViewById(R.id.text_detail_text)).setText(forecastStr);
+            }
             return rootView;
         }
     }
