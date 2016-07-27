@@ -1,7 +1,6 @@
 package me.tomazwang.app.sunshine2;
 
 /**
- *
  * Created by Rbur on 2016/2/22.
  */
 
@@ -38,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author  TomazWang
+ * @author TomazWang
  */
 public class ForecastFragment extends Fragment {
 
@@ -97,8 +96,8 @@ public class ForecastFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 String forecast = mForecastListAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(),DetailActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT,forecast);
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT, forecast);
 
                 startActivity(intent);
             }
@@ -110,7 +109,6 @@ public class ForecastFragment extends Fragment {
         return rootView;
 
     }
-
 
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
@@ -158,13 +156,13 @@ public class ForecastFragment extends Fragment {
                         .appendQueryParameter(FORMAT_PARAM, format)
                         .appendQueryParameter(UNITS_PARAM, units)
                         .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                        .appendQueryParameter(LANG_PRAM,lang)
+                        .appendQueryParameter(LANG_PRAM, lang)
                         .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
                         .build();
 
                 URL url = new URL(buildUri.toString());
 
-                Log.i(TAG, "buildUri = " + buildUri.toString());
+                //                Log.i(TAG, "buildUri = " + buildUri.toString());
 
                 // Create the request to OWM, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -210,10 +208,10 @@ public class ForecastFragment extends Fragment {
             }
 
             try {
-                return getWeatherDataFromJson(forecastJsonStr,numDays);
+                return getWeatherDataFromJson(forecastJsonStr, numDays);
             } catch (JSONException e) {
                 e.printStackTrace();
-                Log.e(TAG, "doInBackground: JSON Exception",e);
+                Log.e(TAG, "doInBackground: JSON Exception", e);
             }
 
 
@@ -225,9 +223,9 @@ public class ForecastFragment extends Fragment {
         @Override
         protected void onPostExecute(String[] result) {
 
-            if(result != null){
+            if (result != null) {
                 mForecastListAdapter.clear();
-                for(String dayForecastStr : result){
+                for (String dayForecastStr : result) {
                     mForecastListAdapter.add(dayForecastStr);
                 }
             }
@@ -235,7 +233,7 @@ public class ForecastFragment extends Fragment {
         }
 
 
-        private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays) throws JSONException{
+        private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays) throws JSONException {
 
             // These are the names of the JSON objects that need to be extracted.
             final String OWM_LIST = "list";
@@ -247,8 +245,6 @@ public class ForecastFragment extends Fragment {
             final String OWM_WEATHER_DESCRIPTION = "description";
 
 
-
-
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
@@ -256,10 +252,10 @@ public class ForecastFragment extends Fragment {
             Time dayTime = new Time();
             dayTime.setToNow();
 
-            int julianStartDay = Time.getJulianDay(System.currentTimeMillis(),dayTime.gmtoff);
+            int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
 
             String[] resultStrs = new String[numDays];
-            for (int i = 0; i<weatherArray.length();i++){
+            for (int i = 0; i < weatherArray.length(); i++) {
                 // For now, using the format "Day, description, hi/low"
                 String day;
                 String description;
@@ -273,7 +269,7 @@ public class ForecastFragment extends Fragment {
                 // "this saturday".
                 long dateTime;
                 // Cheating to convert this to UTC time, which is what we want anyhow
-                dateTime = dayTime.setJulianDay(julianStartDay+i);
+                dateTime = dayTime.setJulianDay(julianStartDay + i);
                 day = getReadableDateString(dateTime);
 
                 // description is in a child array called "weather", which is 1 element long.
@@ -314,13 +310,12 @@ public class ForecastFragment extends Fragment {
 
     }
 
-    public void refresh(){
+    public void refresh() {
         Log.d(TAG, "refresh: do refresh()");
 
         FetchWeatherTask weatherTask = new FetchWeatherTask();
         weatherTask.execute("Taipei");
     }
-
 
 
 }

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,9 +21,26 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
+        Toolbar toolbar = (Toolbar)findViewById(R.id.toolBar);
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "onClick: toolBar navigate back");
+                onBackPressed();
+            }
+        });
+
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+            Log.i(TAG, "onCreate: place fragment");
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.container, new DetailFragment())
                     .commit();
         }
     }
@@ -53,9 +71,9 @@ public class DetailActivity extends AppCompatActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class DetailFragment extends Fragment {
 
-        public PlaceholderFragment() {
+        public DetailFragment() {
         }
 
         @Override
@@ -67,7 +85,7 @@ public class DetailActivity extends AppCompatActivity {
 
             if(intent != null && intent.hasExtra(Intent.EXTRA_TEXT)){
                 String forecastStr = intent.getStringExtra(Intent.EXTRA_TEXT);
-                Log.v(TAG,"get forecastStr = "+forecastStr);
+                Log.v(TAG,"get forecastStr = "+ forecastStr);
                 ((TextView)rootView.findViewById(R.id.text_detail_text)).setText(forecastStr);
             }
             return rootView;
