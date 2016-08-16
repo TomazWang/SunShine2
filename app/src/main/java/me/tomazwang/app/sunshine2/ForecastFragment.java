@@ -5,9 +5,11 @@ package me.tomazwang.app.sunshine2;
  */
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
@@ -313,8 +315,10 @@ public class ForecastFragment extends Fragment {
     public void refresh() {
         Log.d(TAG, "refresh: do refresh()");
 
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
         FetchWeatherTask weatherTask = new FetchWeatherTask();
-        weatherTask.execute("Taipei");
+        weatherTask.execute(pref.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default)));
     }
 
 
