@@ -84,6 +84,8 @@ public class ForecastFragment extends Fragment {
         List<String> weekForecast = new ArrayList<>();
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+
+
         ListView mForecastList = (ListView) rootView.findViewById(R.id.listview_forecast);
 
         mForecastListAdapter = new ArrayAdapter<>(
@@ -107,11 +109,17 @@ public class ForecastFragment extends Fragment {
 
         mForecastList.setAdapter(mForecastListAdapter);
 
-        refresh();
         return rootView;
 
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart: refreshing data");
+        refresh();
+    }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
@@ -134,7 +142,10 @@ public class ForecastFragment extends Fragment {
             String forecastJsonStr = null;
 
             String format = "json";
-            String units = "metric";
+
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+            String units = pref.getString(getString(R.string.pref_unit_key),getString(R.string.pref_unit_metric_value));
             int numDays = 7;
             String lang = "zh_cn";
             try {
